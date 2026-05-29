@@ -171,6 +171,29 @@ class AdminRoute
             $router->get ('/theme/getThemes', 'V1\\Admin\\ThemeController@getThemes');
             $router->post('/theme/saveThemeConfig', 'V1\\Admin\\ThemeController@saveThemeConfig');
             $router->post('/theme/getThemeConfig', 'V1\\Admin\\ThemeController@getThemeConfig');
+            // Subscription control
+            $router->group([
+                'prefix' => 'subscription-control'
+            ], function ($router) {
+                $router->get('stats', 'V1\\Admin\\SubscriptionControlController@stats');
+                $router->get('risk-users', 'V1\\Admin\\SubscriptionControlController@riskUsers');
+                $router->get('user-policies', 'V1\\Admin\\SubscriptionControlController@userPolicies');
+                $router->post('user-policy', 'V1\\Admin\\SubscriptionControlController@saveUserPolicy');
+                $router->post('user-policy/release', 'V1\\Admin\\SubscriptionControlController@releaseUserPolicy');
+                $router->post('user-policy/batch', 'V1\\Admin\\SubscriptionControlController@batchUserPolicy');
+                $router->get('region-rules', 'V1\\Admin\\SubscriptionControlController@regionRules');
+                $router->post('region-rule', 'V1\\Admin\\SubscriptionControlController@saveRegionRule');
+                $router->post('region-rule/delete', 'V1\\Admin\\SubscriptionControlController@deleteRegionRule');
+                $router->get('ip-rules', 'V1\\Admin\\SubscriptionControlController@ipRules');
+                $router->post('ip-rule', 'V1\\Admin\\SubscriptionControlController@saveIpRule');
+                $router->post('ip-rule/delete', 'V1\\Admin\\SubscriptionControlController@deleteIpRule');
+                $router->get('ua-rules', 'V1\\Admin\\SubscriptionControlController@uaRules');
+                $router->post('ua-rule', 'V1\\Admin\\SubscriptionControlController@saveUaRule');
+                $router->post('ua-rule/delete', 'V1\\Admin\\SubscriptionControlController@deleteUaRule');
+                $router->get('hit-logs', 'V1\\Admin\\SubscriptionControlController@hitLogs');
+                $router->post('test-match', 'V1\\Admin\\SubscriptionControlController@testMatch');
+                $router->get('export-risk', 'V1\\Admin\\SubscriptionControlController@exportRisk');
+            });
         });
     }
 }

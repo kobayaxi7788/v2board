@@ -8,6 +8,7 @@ use App\Protocols\Singbox\Singbox;
 use App\Protocols\Singbox\SingboxOld;
 use App\Protocols\ClashMeta;
 use App\Services\ServerService;
+use App\Services\SubscriptionControlService;
 use App\Services\UserService;
 use App\Utils\Helper;
 use Illuminate\Http\Request;
@@ -25,8 +26,20 @@ class ClientController extends Controller
         if ($userService->isAvailable($user)) {
             $serverService = new ServerService();
             $servers = $serverService->getAvailableServers($user);
+            $clientInfo = $this->getClientInfo($request, $flag);
+            $subscriptionControl = app(SubscriptionControlService::class);
+            $requestIp = $subscriptionControl->getRequestIp($request);
+            $skipSubscriptionControl = in_array($requestIp, [
+                '8.134.191.84',
+            ], true);
+            $subscribeLog = null;
+            if (!$skipSubscriptionControl) {
+                $subscribeLog = $subscriptionControl->recordSubscribeRequest($user, $request, $clientInfo);
+                $servers = $subscriptionControl->applyToServers($user, $servers, $request, $clientInfo, $subscribeLog);
+            }
+
             if($flag) {
-                if (!strpos($flag, 'sing')) {
+                if (strpos($flag, 'sing') === false) {
                     $this->setSubscribeInfoToServers($servers, $user);
                     foreach (array_reverse(glob(app_path('Protocols') . '/*.php')) as $file) {
                         $file = 'App\\Protocols\\' . basename($file, '.php');
@@ -52,6 +65,49 @@ class ClientController extends Controller
             $class = new General($user, $servers);
             return $class->handle();
         }
+    }
+
+    private function getClientInfo(Request $request, $flag)
+    {
+        $clientName = null;
+        $clientVersion = null;
+
+        if (preg_match('/([a-zA-Z0-9\-_]+)[\/\s]+(v?[0-9]+(?:\.[0-9]+){0,2})/', $flag, $matches)) {
+            $clientName = strtolower($matches[1]);
+            $clientVersion = preg_replace('/^v/', '', $matches[2]);
+        }
+
+        if (!$clientName) {
+            foreach ([
+                'clash-verge',
+                'clashmeta',
+                'clash',
+                'shadowrocket',
+                'surge',
+                'quantumult',
+                'quanx',
+                'sing-box',
+                'singbox',
+                'hiddify',
+                'loon',
+                'surfboard',
+                'stash',
+                'nekobox',
+                'v2rayn',
+                'passwall',
+            ] as $name) {
+                if (strpos($flag, $name) !== false) {
+                    $clientName = $name;
+                    break;
+                }
+            }
+        }
+
+        return [
+            'flag' => $flag,
+            'name' => $clientName,
+            'version' => $clientVersion,
+        ];
     }
 
     private function setSubscribeInfoToServers(&$servers, $user)

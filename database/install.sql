@@ -52,6 +52,126 @@ CREATE TABLE `v2_coupon` (
                              PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+DROP TABLE IF EXISTS `v2_user_subscribe_log`;
+CREATE TABLE `v2_user_subscribe_log` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int unsigned NOT NULL DEFAULT '0',
+  `request_ip` varchar(64) NOT NULL DEFAULT '',
+  `request_user_agent` text,
+  `client_type` varchar(64) NOT NULL DEFAULT '',
+  `subscribe_type` varchar(64) NOT NULL DEFAULT '',
+  `request_path` varchar(255) NOT NULL DEFAULT '',
+  `query_string` varchar(512) NOT NULL DEFAULT '',
+  `ip_location` varchar(255) NOT NULL DEFAULT '',
+  `risk_score` tinyint unsigned NOT NULL DEFAULT '0',
+  `risk_tags` varchar(255) NOT NULL DEFAULT '',
+  `matched_policy_type` varchar(32) NOT NULL DEFAULT '',
+  `matched_policy_id` bigint unsigned NOT NULL DEFAULT '0',
+  `is_policy_applied` tinyint(1) NOT NULL DEFAULT '0',
+  `replaced_types` varchar(64) NOT NULL DEFAULT '',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_sub_log_user_created` (`user_id`,`created_at`),
+  KEY `idx_sub_log_ip_created` (`request_ip`,`created_at`),
+  KEY `idx_sub_log_risk_score` (`risk_score`),
+  KEY `idx_sub_log_created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+DROP TABLE IF EXISTS `v2_subscription_control_user_policies`;
+CREATE TABLE `v2_subscription_control_user_policies` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int unsigned NOT NULL,
+  `status` varchar(32) NOT NULL DEFAULT 'blocked',
+  `reason` varchar(255) NOT NULL DEFAULT '',
+  `ss2022_domain` varchar(255) NOT NULL DEFAULT '',
+  `anytls_domain` varchar(255) NOT NULL DEFAULT '',
+  `anytls_sni` varchar(255) NOT NULL DEFAULT '',
+  `enabled` tinyint(1) NOT NULL DEFAULT '1',
+  `created_by` int unsigned NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_sub_policy_user_status` (`user_id`,`enabled`,`status`),
+  KEY `idx_sub_policy_updated_at` (`updated_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+DROP TABLE IF EXISTS `v2_subscription_control_region_rules`;
+CREATE TABLE `v2_subscription_control_region_rules` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL DEFAULT '',
+  `keywords` varchar(255) NOT NULL DEFAULT '',
+  `match_mode` varchar(16) NOT NULL DEFAULT 'all',
+  `ss2022_domain` varchar(255) NOT NULL DEFAULT '',
+  `anytls_domain` varchar(255) NOT NULL DEFAULT '',
+  `anytls_sni` varchar(255) NOT NULL DEFAULT '',
+  `priority` int NOT NULL DEFAULT '100',
+  `enabled` tinyint(1) NOT NULL DEFAULT '1',
+  `created_by` int unsigned NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_sub_region_enabled_priority` (`enabled`,`priority`,`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+DROP TABLE IF EXISTS `v2_subscription_control_ip_rules`;
+CREATE TABLE `v2_subscription_control_ip_rules` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL DEFAULT '',
+  `rule_type` varchar(16) NOT NULL DEFAULT 'single',
+  `rule_value` varchar(128) NOT NULL DEFAULT '',
+  `ip_version` tinyint unsigned NOT NULL DEFAULT '4',
+  `ss2022_domain` varchar(255) NOT NULL DEFAULT '',
+  `anytls_domain` varchar(255) NOT NULL DEFAULT '',
+  `anytls_sni` varchar(255) NOT NULL DEFAULT '',
+  `priority` int NOT NULL DEFAULT '100',
+  `enabled` tinyint(1) NOT NULL DEFAULT '1',
+  `created_by` int unsigned NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_sub_ip_enabled_priority` (`enabled`,`priority`,`id`),
+  KEY `idx_sub_ip_rule_value` (`rule_value`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+DROP TABLE IF EXISTS `v2_subscription_control_ua_rules`;
+CREATE TABLE `v2_subscription_control_ua_rules` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL DEFAULT '',
+  `keywords` varchar(255) NOT NULL DEFAULT '',
+  `match_mode` varchar(16) NOT NULL DEFAULT 'any',
+  `ss2022_domain` varchar(255) NOT NULL DEFAULT '',
+  `anytls_domain` varchar(255) NOT NULL DEFAULT '',
+  `anytls_sni` varchar(255) NOT NULL DEFAULT '',
+  `priority` int NOT NULL DEFAULT '100',
+  `enabled` tinyint(1) NOT NULL DEFAULT '1',
+  `created_by` int unsigned NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_sub_ua_enabled_priority` (`enabled`,`priority`,`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+DROP TABLE IF EXISTS `v2_subscription_control_hit_logs`;
+CREATE TABLE `v2_subscription_control_hit_logs` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int unsigned NOT NULL DEFAULT '0',
+  `policy_type` varchar(32) NOT NULL DEFAULT '',
+  `policy_id` bigint unsigned NOT NULL DEFAULT '0',
+  `request_ip` varchar(64) NOT NULL DEFAULT '',
+  `ip_location` varchar(255) NOT NULL DEFAULT '',
+  `user_agent` text,
+  `subscribe_type` varchar(64) NOT NULL DEFAULT '',
+  `matched_keywords` varchar(255) NOT NULL DEFAULT '',
+  `replaced_types` varchar(64) NOT NULL DEFAULT '',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_sub_hit_user_created` (`user_id`,`created_at`),
+  KEY `idx_sub_hit_policy` (`policy_type`,`policy_id`),
+  KEY `idx_sub_hit_created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 
 DROP TABLE IF EXISTS `v2_giftcard`;
 CREATE TABLE `v2_giftcard` (
